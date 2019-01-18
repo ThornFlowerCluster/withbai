@@ -6,7 +6,7 @@
 <!--
       namespace；隔离sql语句
 -->
-<mapper namespace="">
+<mapper namespace="com.with.bai.dao">
 
 
 

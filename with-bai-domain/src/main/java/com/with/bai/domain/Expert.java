@@ -3,11 +3,9 @@ package com.with.bai.domain;
 import lombok.Data;
 
 @Data
-public class Admin {
-
-    private Long aid;
+public class Expert {
+    private Long eid;
     private String name;
+    private String image;
     private String email;
-    private String password;
-
 }
