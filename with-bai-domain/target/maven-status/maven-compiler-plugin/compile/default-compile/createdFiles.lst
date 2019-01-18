@@ -1,0 +1,7 @@
+com\with\bai\domain\User.class
+com\with\bai\domain\Fund.class
+com\with\bai\domain\Opinion.class
+com\with\bai\domain\Orders.class
+com\with\bai\domain\Bank.class
+com\with\bai\domain\Admin.class
+com\with\bai\domain\Loan.class
