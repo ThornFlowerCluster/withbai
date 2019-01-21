@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.with.bai.dao.FundDao">
+<sql id="content">
+    a.fid,
+    a.name,
+    a.title,
+    a.interest_rate AS interestRate,
+    a.time,
+    a.baseline,
+    a.year_rate AS yearRate,
+    a.invest_time AS investTime,
+    a.unit_price AS unitPrice,
+    a.number,
+    a.positions,
+    a.introduction,
+    a.power
+</sql>
+<!--查询全部条数-->
+<select id="selectFundByPower" resultType="Fund">
+    SELECT
+    <include refid="content"/>
+    FROM
+    wb_fund AS a
+    WHERE
+    a.power = #{power}
+</select>
+    <select id="selectFundCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM wb_fund AS a
+        <where>
+            1 = 1
+            <if test="investTime != null and investTime != ''">
+               AND a.invest_time = #{investTime}
+            </if>
+        </where>
+        AND a.power = #{power}
+    </select>
+
+    <select id="selectFundByFid" resultType="Fund">
+        SELECT
+        <include refid="content"/>
+        FROM
+        wb_fund AS a
+        WHERE
+        a.fid = #{fid}
+    </select>
+
+    <select id="selectFundByPages" resultType="Fund">
+        SELECT
+        <include refid="content"/>
+        FROM
+        wb_fund AS a
+        <where>
+            1 = 1
+            <if test="fund.investTime != null and fund.investTime != ''">
+              AND a.invest_time = #{fund.investTime}
+            </if>
+        </where>
+        AND a.power = #{fund.power}
+        LIMIT #{start},#{limit}
+    </select>
+
+</mapper>
+
