@@ -6,8 +6,58 @@
 <!--
       namespace；隔离sql语句
 -->
-<mapper namespace="">
+<mapper namespace="com.with.bai.dao.UserDao">
+    <sql id="usercontent">
+        uid,
+        email,
+        name,
+        password,
+        ID_number,
+        phone,
+        sex,
+        job,
+        created,
+        updated
 
+  </sql>
+    <insert id="addUser">
+        INSERT INTO wb_user
+        (
+        email,
+        name,
+        password,
+        ID_number,
+        phone,
+        sex,
+        job,
+        created,
+        updated
+        )
+        values
+        (
+        #{email},
+        #{name},
+        #{password},
+        #{IDNumber},
+        #{phone},
+        #{sex},
+        #{job},
+        #{created},
+        #{updated}
+        )
+    </insert>
 
+    <select id="getUserByid" resultType="com.with.bai.domain.User">
+        SELECT
+        <include refid="usercontent"/>
+        FROM wb_user
+        WHERE uid=#{id}
+    </select>
 
+    <select id="getuserByemail" resultType="User">
+        select
+         <include refid="usercontent"/>
+        from wb_user
+        where email=#{email}
+    </select>
 </mapper>

@@ -13,5 +13,7 @@ public class User {
     private String phone;
     private String sex;
     private String job;
+    private String created;
+    private String updated;
 
 }
