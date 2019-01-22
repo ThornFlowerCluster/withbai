@@ -4,7 +4,6 @@ import com.with.bai.dao.FundDao;
 import com.with.bai.domain.Fund;
 import com.with.bai.service.FundService;
 import com.with.bai.utils.BaseResult;
-import com.with.bai.utils.PageInfo;
 import com.with.bai.web.dto.FundDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,27 +63,31 @@ public class FundServiceImpl implements FundService {
      */
     @Override
     public BaseResult selectFundByPages(int page, int limit, Fund fund) {
-        PageInfo<Fund> pageInfo = new PageInfo<>();
         Map<String, Object> map = new HashMap<>();
+        Map<String, Object> pageinfo = new HashMap<>();
         int count = getCount(fund);
         int start = (page - 1) * limit;
         int pagesNo = (int) Math.ceil(count * 1.0 / limit);
         map.put("start", start);
         map.put("limit", limit);
         map.put("fund", fund);
-        pageInfo.setData(dao.selectFundByPages(map));
-        List<Object> fundDTOS = getFundDTOS(pageInfo);
-        if (pageInfo.getData() != null) {
-            result = BaseResult.success("ok", fundDTOS, page, pagesNo, limit);
+        pageinfo.put("page", page);
+        pageinfo.put("limit", limit);
+        pageinfo.put("pagesNo", pagesNo);
+        List<Fund> funds = dao.selectFundByPages(map);
+        List<Object> fundDTOS = getFundDTOS(funds,pageinfo);
+        if (fundDTOS != null) {
+            result = BaseResult.success("ok", fundDTOS);
         } else {
             result = BaseResult.fail("error");
         }
         return result;
     }
 
-    private List<Object> getFundDTOS(PageInfo<Fund> pageInfo) {
+    private List<Object> getFundDTOS(List<Fund> funds, Map<String, Object> pageinfo) {
         List<Object> fundDTOS = new ArrayList<>();
-        for (Fund fundd : pageInfo.getData()) {
+        fundDTOS.add(pageinfo);
+        for (Fund fundd : funds) {
             FundDTO fundDTO = new FundDTO();
             BeanUtils.copyProperties(fundd, fundDTO);
             fundDTOS.add(fundDTO);

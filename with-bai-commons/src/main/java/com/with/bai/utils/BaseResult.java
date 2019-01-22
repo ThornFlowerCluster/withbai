@@ -10,9 +10,6 @@ public class BaseResult implements Serializable {
     private int status;
     //错误信息或者正确信息
     private String message;
-    private int pageNo;
-    private int limit;
-    private int pagesNo;
     private Object data;
 
     public static final int STATUS_SUCCESS = 200;
@@ -35,11 +32,6 @@ public class BaseResult implements Serializable {
 
     public static BaseResult success(int status, String message,Object data){
         BaseResult baseResult = BaseResult.createBaseResult(status, message,data);
-        return baseResult;
-    }
-
-    public static BaseResult success(String message,Object data,int pageNo,int pagesNo,int limit){
-        BaseResult baseResult = BaseResult.createBaseResult( message,data,pageNo,pagesNo,limit);
         return baseResult;
     }
 
@@ -72,16 +64,6 @@ public class BaseResult implements Serializable {
         baseResult.setStatus(status);
         baseResult.setMessage(message);
         baseResult.setData(data);
-        return baseResult;
-    }
-    public static BaseResult createBaseResult( String message,Object data,int pageNo,int pagesNo,int limit) {
-        BaseResult baseResult = new BaseResult();
-        baseResult.setStatus(STATUS_SUCCESS);
-        baseResult.setMessage(message);
-        baseResult.setData(data);
-        baseResult.setLimit(limit);
-        baseResult.setPageNo(pageNo);
-        baseResult.setPagesNo(pagesNo);
         return baseResult;
     }
 
