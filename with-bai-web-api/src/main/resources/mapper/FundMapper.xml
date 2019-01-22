@@ -60,6 +60,10 @@
         AND a.power = #{fund.power}
         LIMIT #{start},#{limit}
     </select>
-
+    <insert id="payByFund">
+         UPDATE wb_fund AS a SET a.positions = #{positions}
+         WHERE
+         a.fid = #{fid}
+    </insert>
 </mapper>
 

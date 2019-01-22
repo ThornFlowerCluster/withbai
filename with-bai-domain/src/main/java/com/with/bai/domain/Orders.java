@@ -2,10 +2,11 @@ package com.with.bai.domain;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
-public class Orders {
+public class Orders implements Serializable {
 
     private  Long oid;
     private  Double loanMoney;

@@ -36,10 +36,9 @@ public class FundController {
         return baseResult;
     }
 
-    @RequestMapping(value = "pay", method = RequestMethod.GET)
+    @RequestMapping(value = "pay", method = RequestMethod.POST)
     public BaseResult pay(Fund fund, Double money, HttpServletRequest request) {
         User user = (User) request.getSession().getAttribute("user");
-
         return service.payByFund(fund, user, money);
     }
 

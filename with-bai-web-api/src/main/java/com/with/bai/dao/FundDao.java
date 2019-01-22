@@ -17,7 +17,5 @@ public interface FundDao {
 
     int selectFundCount(Fund fund);
 
-    void payByFund(Long fid, int positions);
-
-
+    int payByFund(Fund fund);
 }

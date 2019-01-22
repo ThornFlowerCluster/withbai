@@ -13,13 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.xml.crypto.Data;
+import java.io.Serializable;
 import java.util.*;
 
 @Service
-public class FundServiceImpl implements FundService {
+public class FundServiceImpl implements FundService, Serializable {
 
     @Autowired
     private FundDao dao;
+    @Autowired
     private OrdersDao ordersDao;
 
 
@@ -94,20 +96,32 @@ public class FundServiceImpl implements FundService {
 
     @Override
     public BaseResult payByFund(Fund fund, User user, Double money) {
-        if (money < 1000.00) {
-            result = BaseResult.fail("最低起為10000");
+        if (money ==null || money < 1000.00) {
+            result = BaseResult.fail("最低起為1000");
         } else {
             Fund fundItem = dao.selectFundByFid(fund.getFid());
-            int positions = (int) Math.floor(money / fund.getUnitPrice());
+            double positions =  Math.floor(money / fundItem.getUnitPrice());
+            Long aaa = (long) (positions+fundItem.getPositions());
             Date date = new Date();
-            dao.payByFund(fund.getFid(), positions);
+            fund.setPositions(aaa);
             Orders orders = new Orders();
             orders.setFid(fund.getFid());
-            orders.setUid(user.getUid());
+            orders.setUid(1L);
             orders.setLoanMoney(money);
             orders.setStartTime(date);
-            orders.setEndTime(getMinute(date,getMonu(fund)));
-            ordersDao.insertOrdersByFid(orders);
+            orders.setEndTime(getMinute(date,getMonu(fundItem.getInvestTime())));
+            Orders orders1 = ordersDao.selectOrdersByFid(orders);
+            int orderr;
+            if(orders1 == null){
+                orderr = ordersDao.insertOrdersByFid(orders);
+            }else{
+                Double loanMoney = orders1.getLoanMoney();
+                orders.setLoanMoney(loanMoney+money);
+                orderr = ordersDao.updateOrdersByFid(orders);
+            }
+            if(orderr > 0){
+                dao.payByFund(fund);
+            }
             result = BaseResult.success("ok");
         }
         return result;
@@ -136,9 +150,9 @@ public class FundServiceImpl implements FundService {
         return date;
     }
 
-    public static int getMonu(Fund fund) {
+    public static int getMonu(int fund) {
         int a = 0;
-        switch (fund.getInvestTime()){
+        switch (fund){
             case 1:
                 a = 6;
                 break;
@@ -149,6 +163,7 @@ public class FundServiceImpl implements FundService {
                 a = 24;
                 break;
         }
+        System.out.println(a);
         return a;
     }
 
