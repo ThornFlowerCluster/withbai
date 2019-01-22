@@ -1,7 +1,10 @@
 package com.with.bai.service.impl;
 
 import com.with.bai.dao.FundDao;
+import com.with.bai.dao.OrdersDao;
 import com.with.bai.domain.Fund;
+import com.with.bai.domain.Orders;
+import com.with.bai.domain.User;
 import com.with.bai.service.FundService;
 import com.with.bai.utils.BaseResult;
 import com.with.bai.web.dto.FundDTO;
@@ -9,6 +12,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.xml.crypto.Data;
 import java.util.*;
 
 @Service
@@ -16,6 +20,9 @@ public class FundServiceImpl implements FundService {
 
     @Autowired
     private FundDao dao;
+    private OrdersDao ordersDao;
+
+
     BaseResult result = null;
 
     /**
@@ -59,6 +66,7 @@ public class FundServiceImpl implements FundService {
      * 投资时限 0 全部查询
      * 理财（1、六个月内，2、六到十二个月内，3 十二个月以上，4、活期）
      * 基金（1、债券型，2、混合型，3、股票型，4、封闭式，5、指数型)
+     *
      * @return
      */
     @Override
@@ -75,11 +83,32 @@ public class FundServiceImpl implements FundService {
         pageinfo.put("limit", limit);
         pageinfo.put("pagesNo", pagesNo);
         List<Fund> funds = dao.selectFundByPages(map);
-        List<Object> fundDTOS = getFundDTOS(funds,pageinfo);
+        List<Object> fundDTOS = getFundDTOS(funds, pageinfo);
         if (fundDTOS != null) {
             result = BaseResult.success("ok", fundDTOS);
         } else {
             result = BaseResult.fail("error");
+        }
+        return result;
+    }
+
+    @Override
+    public BaseResult payByFund(Fund fund, User user, Double money) {
+        if (money < 1000.00) {
+            result = BaseResult.fail("最低起為10000");
+        } else {
+            Fund fundItem = dao.selectFundByFid(fund.getFid());
+            int positions = (int) Math.floor(money / fund.getUnitPrice());
+            Date date = new Date();
+            dao.payByFund(fund.getFid(), positions);
+            Orders orders = new Orders();
+            orders.setFid(fund.getFid());
+            orders.setUid(user.getUid());
+            orders.setLoanMoney(money);
+            orders.setStartTime(date);
+            orders.setEndTime(getMinute(date,getMonu(fund)));
+            ordersDao.insertOrdersByFid(orders);
+            result = BaseResult.success("ok");
         }
         return result;
     }
@@ -97,6 +126,30 @@ public class FundServiceImpl implements FundService {
 
     private int getCount(Fund fund) {
         return dao.selectFundCount(fund);
+    }
+
+    public static Date getMinute(Date date, int minute) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.MINUTE, minute);
+        date = calendar.getTime();
+        return date;
+    }
+
+    public static int getMonu(Fund fund) {
+        int a = 0;
+        switch (fund.getInvestTime()){
+            case 1:
+                a = 6;
+                break;
+            case 2:
+                a = 12;
+                break;
+            case 3:
+                a = 24;
+                break;
+        }
+        return a;
     }
 
     /**

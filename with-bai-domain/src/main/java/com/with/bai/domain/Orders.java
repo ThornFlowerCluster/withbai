@@ -8,7 +8,7 @@ import java.util.Date;
 public class Orders {
 
     private  Long oid;
-    private  String loanMoney;
+    private  Double loanMoney;
     private Date startTime;
     private  Date endTime;
     private String state;
