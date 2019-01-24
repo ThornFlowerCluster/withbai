@@ -110,15 +110,15 @@ public class FundServiceImpl implements FundService, Serializable {
 
     /**
      * 投资产品
-     * @param fund
+     * @param
      * @param user
      * @param money
      * @return
      */
     @Override
-    public BaseResult payByFund(Fund fund, User user, Double money) {
+    public BaseResult payByFund(Long fid, User user, Double money) {
         int orderr;
-        Fund fundItem = fundDao.selectFundByFid(fund.getFid());
+        Fund fundItem = fundDao.selectFundByFid(fid);
         if (money == null || money < fundItem.getBaseline()) {
             result = BaseResult.fail("最低起为起购金额"+fundItem.getBaseline());
         } else {
@@ -126,9 +126,9 @@ public class FundServiceImpl implements FundService, Serializable {
             double positions = Math.floor(money / fundItem.getUnitPrice());
             Long aaa = (long) (positions + fundItem.getPositions());
             Date date = new Date();
-            fund.setPositions(aaa);
+            fundItem.setPositions(aaa);
             Orders orders = new Orders();
-            orders.setFid(fund.getFid());
+            orders.setFid(fid);
             orders.setUid(1L);
             orders.setLoanMoney(money);
             orders.setStartTime(date);
@@ -142,7 +142,7 @@ public class FundServiceImpl implements FundService, Serializable {
                 orderr = ordersDao.updateOrdersByFid(orders);
             }
             if (orderr > 0) {
-                fundDao.payByFund(fund);
+                fundDao.payByFund(fundItem);
             }
             result = BaseResult.success("ok");
         }
@@ -192,7 +192,7 @@ public class FundServiceImpl implements FundService, Serializable {
     public static Date getMinute(Date date, int minute) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        calendar.add(Calendar.MINUTE, minute);
+        calendar.add(Calendar.DAY_OF_MONTH, minute*30);
         date = calendar.getTime();
         return date;
     }

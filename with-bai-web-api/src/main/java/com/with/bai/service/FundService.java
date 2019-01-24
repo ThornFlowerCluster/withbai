@@ -9,9 +9,9 @@ public interface FundService {
 
     BaseResult selectFundByFid(Long fid);
 
-    BaseResult selectFundByPages(int spage, int limit, Fund fund);
+    BaseResult selectFundByPages(int spage, int limit,Fund fund);
 
-    BaseResult payByFund(Fund fund, User user, Double money);
+    BaseResult payByFund(Long fid, User user, Double money);
 
     BaseResult getInformation();
 }
