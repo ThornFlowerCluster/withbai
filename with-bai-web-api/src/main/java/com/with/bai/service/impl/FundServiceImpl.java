@@ -118,10 +118,11 @@ public class FundServiceImpl implements FundService, Serializable {
     @Override
     public BaseResult payByFund(Fund fund, User user, Double money) {
         int orderr;
-        if (money == null || money < 1000.00) {
-            result = BaseResult.fail("最低起為1000");
+        Fund fundItem = fundDao.selectFundByFid(fund.getFid());
+        if (money == null || money < fundItem.getBaseline()) {
+            result = BaseResult.fail("最低起为起购金额"+fundItem.getBaseline());
         } else {
-            Fund fundItem = fundDao.selectFundByFid(fund.getFid());
+
             double positions = Math.floor(money / fundItem.getUnitPrice());
             Long aaa = (long) (positions + fundItem.getPositions());
             Date date = new Date();
