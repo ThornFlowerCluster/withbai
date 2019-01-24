@@ -13,4 +13,5 @@ public interface FundService {
 
     BaseResult payByFund(Fund fund, User user, Double money);
 
+    BaseResult getInformation();
 }

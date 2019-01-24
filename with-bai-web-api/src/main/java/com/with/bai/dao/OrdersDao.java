@@ -8,4 +8,7 @@ public interface OrdersDao {
     Orders selectOrdersByFid(Orders orders);
 
     int updateOrdersByFid(Orders orders);
+
+    int selectOrdersSum();
+
 }

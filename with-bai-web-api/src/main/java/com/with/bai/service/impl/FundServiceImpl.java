@@ -2,17 +2,20 @@ package com.with.bai.service.impl;
 
 import com.with.bai.dao.FundDao;
 import com.with.bai.dao.OrdersDao;
+import com.with.bai.dao.UserDao;
 import com.with.bai.domain.Fund;
 import com.with.bai.domain.Orders;
 import com.with.bai.domain.User;
 import com.with.bai.service.FundService;
 import com.with.bai.utils.BaseResult;
 import com.with.bai.web.dto.FundDTO;
+import com.with.bai.web.dto.FundFinancialDTO;
+import com.with.bai.web.dto.FundFundDTO;
+import com.with.bai.web.dto.InformationDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.xml.crypto.Data;
 import java.io.Serializable;
 import java.util.*;
 
@@ -20,10 +23,11 @@ import java.util.*;
 public class FundServiceImpl implements FundService, Serializable {
 
     @Autowired
-    private FundDao dao;
+    private FundDao fundDao;
     @Autowired
     private OrdersDao ordersDao;
-
+    @Autowired
+    private UserDao userDao;
 
     BaseResult result = null;
 
@@ -35,7 +39,7 @@ public class FundServiceImpl implements FundService, Serializable {
      */
     @Override
     public BaseResult selectFundByPower(int power) {
-        List<Fund> fundList = dao.selectFundByPower(power);
+        List<Fund> fundList = fundDao.selectFundByPower(power);
         List<FundDTO> fundDTOS = fourItems(fundList);
         if (fundDTOS != null) {
             result = BaseResult.success("ok", fundDTOS);
@@ -53,9 +57,17 @@ public class FundServiceImpl implements FundService, Serializable {
      */
     @Override
     public BaseResult selectFundByFid(Long fid) {
-        Fund fund = dao.selectFundByFid(fid);
+        Fund fund = fundDao.selectFundByFid(fid);
         if (fund != null) {
-            result = BaseResult.success("ok", fund);
+            if(fund.getPower() == 0){
+                FundFundDTO fundFundDTO = new FundFundDTO();
+                BeanUtils.copyProperties(fund, fundFundDTO);
+                result = BaseResult.success("ok", fundFundDTO);
+            }else if(fund.getPower() == 1) {
+                FundFinancialDTO fundFinancialDTO = new FundFinancialDTO();
+                BeanUtils.copyProperties(fund, fundFinancialDTO);
+                result = BaseResult.success("ok", fundFinancialDTO);
+            }
         } else {
             result = BaseResult.fail("error");
         }
@@ -84,7 +96,8 @@ public class FundServiceImpl implements FundService, Serializable {
         pageinfo.put("page", page);
         pageinfo.put("limit", limit);
         pageinfo.put("pagesNo", pagesNo);
-        List<Fund> funds = dao.selectFundByPages(map);
+        pageinfo.put("counts",count);
+        List<Fund> funds = fundDao.selectFundByPages(map);
         List<Object> fundDTOS = getFundDTOS(funds, pageinfo);
         if (fundDTOS != null) {
             result = BaseResult.success("ok", fundDTOS);
@@ -94,14 +107,23 @@ public class FundServiceImpl implements FundService, Serializable {
         return result;
     }
 
+
+    /**
+     * 投资产品
+     * @param fund
+     * @param user
+     * @param money
+     * @return
+     */
     @Override
     public BaseResult payByFund(Fund fund, User user, Double money) {
-        if (money ==null || money < 1000.00) {
+        int orderr;
+        if (money == null || money < 1000.00) {
             result = BaseResult.fail("最低起為1000");
         } else {
-            Fund fundItem = dao.selectFundByFid(fund.getFid());
-            double positions =  Math.floor(money / fundItem.getUnitPrice());
-            Long aaa = (long) (positions+fundItem.getPositions());
+            Fund fundItem = fundDao.selectFundByFid(fund.getFid());
+            double positions = Math.floor(money / fundItem.getUnitPrice());
+            Long aaa = (long) (positions + fundItem.getPositions());
             Date date = new Date();
             fund.setPositions(aaa);
             Orders orders = new Orders();
@@ -109,24 +131,42 @@ public class FundServiceImpl implements FundService, Serializable {
             orders.setUid(1L);
             orders.setLoanMoney(money);
             orders.setStartTime(date);
-            orders.setEndTime(getMinute(date,getMonu(fundItem.getInvestTime())));
+            orders.setEndTime(getMinute(date, getMonu(fundItem.getInvestTime())));
             Orders orders1 = ordersDao.selectOrdersByFid(orders);
-            int orderr;
-            if(orders1 == null){
+            if (orders1 == null) {
                 orderr = ordersDao.insertOrdersByFid(orders);
-            }else{
+            } else {
                 Double loanMoney = orders1.getLoanMoney();
-                orders.setLoanMoney(loanMoney+money);
+                orders.setLoanMoney(loanMoney + money);
                 orderr = ordersDao.updateOrdersByFid(orders);
             }
-            if(orderr > 0){
-                dao.payByFund(fund);
+            if (orderr > 0) {
+                fundDao.payByFund(fund);
             }
             result = BaseResult.success("ok");
         }
         return result;
     }
 
+    @Override
+    public BaseResult getInformation() {
+        InformationDTO informationDTO = new InformationDTO();
+        int userDaoCounts = userDao.getCounts();
+        int ordersSum = ordersDao.selectOrdersSum();
+        informationDTO.setUsers(userDaoCounts*10);
+        informationDTO.setCumulative(ordersSum);
+        informationDTO.setCollection(ordersSum);
+        informationDTO.setProfit((int) (ordersSum*0.01));
+        return BaseResult.success("ok", informationDTO);
+    }
+
+    /**
+     * 减少不需要出现的数据
+     *
+     * @param funds
+     * @param pageinfo
+     * @return
+     */
     private List<Object> getFundDTOS(List<Fund> funds, Map<String, Object> pageinfo) {
         List<Object> fundDTOS = new ArrayList<>();
         fundDTOS.add(pageinfo);
@@ -138,8 +178,14 @@ public class FundServiceImpl implements FundService, Serializable {
         return fundDTOS;
     }
 
+    /**
+     * 设置理财的结束日期
+     *
+     * @param fund
+     * @return
+     */
     private int getCount(Fund fund) {
-        return dao.selectFundCount(fund);
+        return fundDao.selectFundCount(fund);
     }
 
     public static Date getMinute(Date date, int minute) {
@@ -150,9 +196,15 @@ public class FundServiceImpl implements FundService, Serializable {
         return date;
     }
 
+    /**
+     * 获取理财的投资周期
+     *
+     * @param fund
+     * @return
+     */
     public static int getMonu(int fund) {
         int a = 0;
-        switch (fund){
+        switch (fund) {
             case 1:
                 a = 6;
                 break;

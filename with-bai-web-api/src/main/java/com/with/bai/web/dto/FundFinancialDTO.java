@@ -3,16 +3,17 @@ package com.with.bai.web.dto;
 import lombok.Data;
 
 @Data
-public class FundDTO {
+public class FundFinancialDTO {
     private Long fid;
     private String name;
-    private Long code;
     private Double interestRate;
-    private String risklevel;
+    private Double totalassets;
     private Long baseline;
     private Double yearRate;
     private Integer investTime;
     private Long overallscope;
+    private Double unitPrice;
     private Long positions;
+    private String introduction;
     private Integer power;
 }

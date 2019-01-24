@@ -42,6 +42,13 @@ public class FundController {
         return service.payByFund(fund, user, money);
     }
 
+    @RequestMapping(value = "information",method = RequestMethod.GET)
+    public BaseResult information(){
+
+        return service.getInformation();
+    }
+
+
 
 }
 

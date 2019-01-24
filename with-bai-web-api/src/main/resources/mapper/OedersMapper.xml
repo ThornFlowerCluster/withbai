@@ -42,6 +42,10 @@
          AND a.fid = #{fid}
     </update>
 
+    <select id="selectOrdersSum" resultType="java.lang.Integer">
+        select sum(loan_money) from wb_orders
+    </select>
+
 
 </mapper>
 
